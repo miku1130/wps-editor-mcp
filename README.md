@@ -2,73 +2,75 @@
 
 # 📝 WPS Editor MCP
 
-**让AI能够编辑Word、Excel、PowerPoint文档的MCP服务器**
+**An MCP server that enables AI to edit Word, Excel, and PowerPoint documents**
 
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![MCP](https://img.shields.io/badge/MCP-Protocol-purple.svg)](https://modelcontextprotocol.io/)
 
-[功能特性](#-功能特性) • [快速开始](#-快速开始) • [工具列表](#-mcp工具) • [使用示例](#-使用示例) • [配置说明](#-配置说明)
+**English** | [中文文档](README_CN.md)
+
+[Features](#-features) • [Quick Start](#-quick-start) • [Tools](#-mcp-tools) • [Examples](#-examples) • [Configuration](#-configuration)
 
 </div>
 
 ---
 
-## 📖 简介
+## 📖 Introduction
 
-WPS Editor MCP 是一个基于 Model Context Protocol (MCP) 的服务器，让AI助手能够直接读写和编辑 Microsoft Office 及 WPS Office 文档。支持两种工作模式，无需安装Office即可处理现代文档格式，也可通过COM接口控制WPS应用实现更强大的功能。
+WPS Editor MCP is a Model Context Protocol (MCP) server that enables AI assistants to directly read, write, and edit Microsoft Office and WPS Office documents. It supports two operating modes: processing modern document formats without installing Office, or controlling WPS applications via COM interface for more powerful features.
 
-## ✨ 功能特性
+## ✨ Features
 
-### 🔄 双模式架构
+### 🔄 Dual Mode Architecture
 
-| 模式 | 说明 | 依赖 | 支持格式 |
-|:----:|:-----|:-----|:---------|
-| **file** | 直接解析Office Open XML | python-docx, openpyxl, python-pptx | .docx, .xlsx, .pptx |
-| **com** | 通过COM控制WPS应用 | pywin32 + WPS Office | .doc, .xls, .ppt, .docx, .xlsx, .pptx |
+| Mode | Description | Dependencies | Supported Formats |
+|:----:|:------------|:-------------|:------------------|
+| **file** | Direct Office Open XML parsing | python-docx, openpyxl, python-pptx | .docx, .xlsx, .pptx |
+| **com** | WPS automation via COM | pywin32 + WPS Office | .doc, .xls, .ppt, .docx, .xlsx, .pptx |
 
-### 🎯 核心能力
+### 🎯 Core Capabilities
 
-- **📄 Word处理**: 读写文档、设置字体样式、插入图片、段落格式化
-- **📊 Excel处理**: 读写单元格、表格操作、样式设置、合并单元格
-- **📽️ PPT处理**: 读写幻灯片、插入图片、自动生成演示文稿
-- **🎨 专业模板**: 7种精美PPT模板（ocean/forest/sunset/royal/minimal/blue/green）
-- **🔄 格式转换**: Word转PPT、PPT转Word总结、导出PDF
-- **⚙️ WPS自动化**: 运行宏、控制WPS应用
+- **📄 Word Processing**: Read/write documents, set font styles, insert images, paragraph formatting
+- **📊 Excel Processing**: Read/write cells, table operations, style settings, merge cells
+- **📽️ PPT Processing**: Read/write slides, insert images, auto-generate presentations
+- **🎨 Professional Templates**: 7 beautiful PPT templates (ocean/forest/sunset/royal/minimal/blue/green)
+- **🔄 Format Conversion**: Word to PPT, PPT to Word summary, export to PDF
+- **⚙️ WPS Automation**: Run macros, control WPS applications
 
-### 🌟 亮点功能
+### 🌟 Highlight Features
 
-| 功能 | 说明 |
-|:-----|:-----|
-| `doc_to_ppt` | 根据Word文档自动生成专业PPT演示文稿 |
-| `ppt_to_doc` | 读取PPT生成结构化Word总结文档 |
-| `export_pdf` | 将Office文档导出为PDF |
-| `run_macro` | 运行WPS宏脚本 |
+| Feature | Description |
+|:--------|:------------|
+| `doc_to_ppt` | Auto-generate professional PPT from Word documents |
+| `ppt_to_doc` | Generate structured Word summary from PPT |
+| `export_pdf` | Export Office documents to PDF |
+| `run_macro` | Run WPS macro scripts |
 
 ---
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 安装依赖
+### Install Dependencies
 
 ```bash
-# 克隆仓库
-git clone https://github.com/YOUR_USERNAME/wps-editor-mcp.git
+# Clone the repository
+git clone https://github.com/miku1130/wps-editor-mcp.git
 cd wps-editor-mcp
 
-# 安装依赖
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### 启动服务器
+### Start Server
 
 ```bash
 python server.py
 ```
 
-### 配置MCP客户端
+### Configure MCP Client
 
-在你的MCP客户端配置文件中添加：
+Add to your MCP client configuration file:
 
 ```json
 {
@@ -83,81 +85,81 @@ python server.py
 
 ---
 
-## 🛠️ MCP工具
+## 🛠️ MCP Tools
 
-### 基础操作
+### Basic Operations
 
-| 工具 | 说明 | 参数 |
-|:-----|:-----|:-----|
-| `read_document` | 读取文档内容 | file_path, mode, sheet_name |
-| `write_document` | 写入文档内容 | file_path, content, mode, append |
-| `edit_cell` | 编辑Excel单元格 | file_path, row, column, value |
-| `get_sheet_names` | 获取工作表列表 | file_path |
+| Tool | Description | Parameters |
+|:-----|:------------|:-----------|
+| `read_document` | Read document content | file_path, mode, sheet_name |
+| `write_document` | Write document content | file_path, content, mode, append |
+| `edit_cell` | Edit Excel cell | file_path, row, column, value |
+| `get_sheet_names` | Get worksheet names | file_path |
 
-### 表格操作
+### Table Operations
 
-| 工具 | 说明 |
-|:-----|:-----|
-| `add_rows` | 添加行 |
-| `add_columns` | 添加列 |
-| `merge_cells` | 合并单元格 |
-| `unmerge_cells` | 取消合并 |
-| `set_column_width` | 设置列宽 |
-| `set_row_height` | 设置行高 |
+| Tool | Description |
+|:-----|:------------|
+| `add_rows` | Add rows |
+| `add_columns` | Add columns |
+| `merge_cells` | Merge cells |
+| `unmerge_cells` | Unmerge cells |
+| `set_column_width` | Set column width |
+| `set_row_height` | Set row height |
 
-### 样式设置
+### Style Settings
 
-| 工具 | 说明 | 支持属性 |
-|:-----|:-----|:---------|
-| `set_cell_style` | 设置单元格样式 | 字体、字号、加粗、斜体、下划线、颜色、背景色、对齐 |
-| `set_paragraph_style` | 设置段落样式 | 字体、字号、加粗、斜体、下划线、颜色、对齐 |
+| Tool | Description | Supported Properties |
+|:-----|:------------|:---------------------|
+| `set_cell_style` | Set cell style | font, size, bold, italic, underline, color, background, alignment |
+| `set_paragraph_style` | Set paragraph style | font, size, bold, italic, underline, color, alignment |
 
-### 高级功能
+### Advanced Features
 
-| 工具 | 说明 |
-|:-----|:-----|
-| `insert_image` | 插入图片 |
-| `export_pdf` | 导出PDF |
-| `run_macro` | 运行WPS宏 |
-| `doc_to_ppt` | Word转PPT |
-| `ppt_to_doc` | PPT转Word总结 |
+| Tool | Description |
+|:-----|:------------|
+| `insert_image` | Insert image |
+| `export_pdf` | Export to PDF |
+| `run_macro` | Run WPS macro |
+| `doc_to_ppt` | Word to PPT |
+| `ppt_to_doc` | PPT to Word summary |
 
 ---
 
-## 💡 使用示例
+## 💡 Examples
 
-### 示例1: 创建Word文档
+### Example 1: Create Word Document
 
 ```python
-# 写入内容
+# Write content
 write_document(
     file_path="report.docx",
-    content="这是标题\n\n这是正文内容。",
+    content="Title\n\nBody content here.",
     mode="file"
 )
 
-# 设置标题样式
+# Set title style (SimSun, 22pt, bold, centered)
 set_paragraph_style(
     file_path="report.docx",
     para_index=0,
-    font_name="SimHei",
+    font_name="SimSun",
     font_size=22,
     bold=True,
     align="center"
 )
 ```
 
-### 示例2: 操作Excel表格
+### Example 2: Excel Table Operations
 
 ```python
-# 创建表格
+# Create table
 write_document(
     file_path="data.xlsx",
-    content='[["姓名", "年龄"], ["张三", 25], ["李四", 30]]',
+    content='[["Name", "Age"], ["Alice", 25], ["Bob", 30]]',
     mode="file"
 )
 
-# 设置表头样式
+# Set header style
 set_cell_style(
     file_path="data.xlsx",
     row=1, column=1,
@@ -168,7 +170,7 @@ set_cell_style(
     color="FFFFFF"
 )
 
-# 合并单元格
+# Merge cells
 merge_cells(
     file_path="data.xlsx",
     start_row=1, start_col=1,
@@ -176,33 +178,33 @@ merge_cells(
 )
 ```
 
-### 示例3: 生成专业PPT
+### Example 3: Generate Professional PPT
 
 ```python
-# 从Word文档生成PPT
+# Generate PPT from Word document
 doc_to_ppt(
     doc_path="paper.docx",
     ppt_path="presentation.pptx",
-    template="ocean"  # 可选: ocean/forest/sunset/royal/minimal/blue/green
+    template="ocean"  # Options: ocean/forest/sunset/royal/minimal/blue/green
 )
 
-# 从PPT生成Word总结
+# Generate Word summary from PPT
 ppt_to_doc(
     ppt_path="presentation.pptx",
     doc_path="summary.docx"
 )
 ```
 
-### 示例4: COM模式（需要安装WPS）
+### Example 4: COM Mode (Requires WPS Installation)
 
 ```python
-# 读取旧版.doc文件
+# Read legacy .doc file
 read_document(
     file_path="old_file.doc",
     mode="com"
 )
 
-# 导出PDF
+# Export to PDF
 export_pdf(
     file_path="document.docx",
     output_path="output.pdf"
@@ -211,84 +213,63 @@ export_pdf(
 
 ---
 
-## 🎨 PPT模板预览
+## 🎨 PPT Templates
 
-| 模板 | 风格 | 适用场景 |
-|:-----|:-----|:---------|
-| `ocean` | 🌊 深海蓝 | 商务汇报、技术分享 |
-| `forest` | 🌲 森林绿 | 环保主题、自然科学 |
-| `sunset` | 🌅 日落橙 | 创意展示、艺术设计 |
-| `royal` | 👑 皇家紫 | 高端场合、正式汇报 |
-| `minimal` | ⬜ 极简白 | 学术报告、简洁风格 |
-| `blue` | 💙 经典蓝 | 通用场景、专业汇报 |
-| `green` | 💚 清新绿 | 科技主题、创新展示 |
+| Template | Style | Use Cases |
+|:---------|:------|:----------|
+| `ocean` | 🌊 Deep Blue | Business reports, tech sharing |
+| `forest` | 🌲 Forest Green | Environmental, natural science |
+| `sunset` | 🌅 Sunset Orange | Creative displays, art design |
+| `royal` | 👑 Royal Purple | High-end occasions, formal reports |
+| `minimal` | ⬜ Minimal White | Academic reports, clean style |
+| `blue` | 💙 Classic Blue | General purpose, professional |
+| `green` | 💚 Fresh Green | Tech themes, innovation |
 
 ---
 
-## ⚙️ 配置说明
+## ⚙️ Configuration
 
-### 环境要求
+### Requirements
 
 - Python 3.8+
-- Windows系统（COM模式需要）
+- Windows (for COM mode)
 
-### 依赖包
+### Dependencies
 
 ```
-# Office文档处理
-python-docx>=1.1.0      # Word文档
-openpyxl>=3.1.0          # Excel文档
-python-pptx>=0.6.21      # PowerPoint文档
+# Office document processing
+python-docx>=1.1.0      # Word documents
+openpyxl>=3.1.0          # Excel documents
+python-pptx>=0.6.21      # PowerPoint documents
 
-# COM自动化（可选，Windows）
+# COM automation (optional, Windows)
 pywin32>=306
 comtypes>=1.4.1
 ```
 
-### MCP客户端配置
-
-#### Claude Desktop
-
-```json
-{
-  "mcpServers": {
-    "wps-editor": {
-      "command": "python",
-      "args": ["C:/path/to/wps-editor-mcp/server.py"]
-    }
-  }
-}
-```
-
-#### 其他MCP客户端
-
-参考 [MCP官方文档](https://modelcontextprotocol.io/) 进行配置。
-
 ---
 
-## 📁 项目结构
+## 📁 Project Structure
 
 ```
 wps-editor-mcp/
-├── server.py              # MCP服务器主程序
-├── requirements.txt       # 依赖列表
-├── test_server.py         # 单元测试
-├── README.md              # 项目说明
-└── examples/              # 示例文件
-    ├── sample_paper.docx
-    ├── generated_ppt.pptx
-    └── summary.docx
+├── server.py              # MCP server main program
+├── requirements.txt       # Dependencies
+├── test_server.py         # Unit tests
+├── README.md              # English documentation
+├── README_CN.md           # Chinese documentation
+└── LICENSE                # MIT License
 ```
 
 ---
 
-## 🧪 运行测试
+## 🧪 Run Tests
 
 ```bash
 python test_server.py
 ```
 
-测试输出示例：
+Test output:
 ```
 ============================================================
 WPS Editor MCP Unit Tests
@@ -312,51 +293,51 @@ All tests passed!
 
 ---
 
-## 📊 工具总览
+## 📊 Tools Overview
 
-共 **17个** MCP工具：
+Total **17** MCP tools:
 
-| 类别 | 数量 | 工具 |
-|:-----|:----:|:-----|
-| 基础操作 | 4 | read_document, write_document, edit_cell, get_sheet_names |
-| 表格操作 | 6 | add_rows, add_columns, merge_cells, unmerge_cells, set_column_width, set_row_height |
-| 样式设置 | 2 | set_cell_style, set_paragraph_style |
-| 图片插入 | 1 | insert_image |
-| 文档转换 | 2 | doc_to_ppt, ppt_to_doc |
-| 高级功能 | 2 | export_pdf, run_macro |
-
----
-
-## 🤝 贡献
-
-欢迎提交Issue和Pull Request！
-
-1. Fork本仓库
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 创建Pull Request
+| Category | Count | Tools |
+|:---------|:-----:|:------|
+| Basic Operations | 4 | read_document, write_document, edit_cell, get_sheet_names |
+| Table Operations | 6 | add_rows, add_columns, merge_cells, unmerge_cells, set_column_width, set_row_height |
+| Style Settings | 2 | set_cell_style, set_paragraph_style |
+| Image Insert | 1 | insert_image |
+| Document Conversion | 2 | doc_to_ppt, ppt_to_doc |
+| Advanced Features | 2 | export_pdf, run_macro |
 
 ---
 
-## 📄 许可证
+## 🤝 Contributing
 
-本项目基于 MIT 许可证开源 - 详见 [LICENSE](LICENSE) 文件
+Issues and Pull Requests are welcome!
+
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Create Pull Request
 
 ---
 
-## 🙏 致谢
+## 📄 License
 
-- [Model Context Protocol](https://modelcontextprotocol.io/) - MCP协议规范
-- [python-docx](https://python-docx.readthedocs.io/) - Word文档处理
-- [openpyxl](https://openpyxl.readthedocs.io/) - Excel文档处理
-- [python-pptx](https://python-pptx.readthedocs.io/) - PowerPoint文档处理
+This project is licensed under the MIT License - see [LICENSE](LICENSE) for details
+
+---
+
+## 🙏 Acknowledgments
+
+- [Model Context Protocol](https://modelcontextprotocol.io/) - MCP protocol specification
+- [python-docx](https://python-docx.readthedocs.io/) - Word document processing
+- [openpyxl](https://openpyxl.readthedocs.io/) - Excel document processing
+- [python-pptx](https://python-pptx.readthedocs.io/) - PowerPoint document processing
 
 ---
 
 <div align="center">
 
-**如果这个项目对你有帮助，请给个 ⭐ Star 支持一下！**
+**If this project helps you, please give a ⭐ Star!**
 
 Made with ❤️
 
