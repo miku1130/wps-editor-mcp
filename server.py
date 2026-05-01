@@ -756,6 +756,359 @@ def _ppt_to_doc(ppt_path: str, doc_path: str) -> dict:
     }
 
 
+# ==================== 批量操作 ====================
+
+def _batch_read_docx(file_path: str, para_indices: list) -> list:
+    """批量读取Word段落"""
+    from docx import Document
+    doc = Document(file_path)
+    results = []
+    for idx in para_indices:
+        if 0 <= idx < len(doc.paragraphs):
+            para = doc.paragraphs[idx]
+            results.append({
+                "index": idx,
+                "text": para.text,
+                "style": para.style.name if para.style else None
+            })
+        else:
+            results.append({"index": idx, "error": "Index out of range"})
+    return results
+
+
+def _batch_read_xlsx(file_path: str, cells: list, sheet_name: str = None) -> list:
+    """批量读取Excel单元格"""
+    from openpyxl import load_workbook
+    wb = load_workbook(file_path, data_only=True)
+    ws = wb[sheet_name] if sheet_name else wb.active
+    results = []
+    for cell_ref in cells:
+        try:
+            cell = ws[cell_ref]
+            results.append({
+                "cell": cell_ref,
+                "value": cell.value,
+                "type": type(cell.value).__name__ if cell.value is not None else "null"
+            })
+        except Exception as e:
+            results.append({"cell": cell_ref, "error": str(e)})
+    return results
+
+
+def _batch_write_xlsx(file_path: str, data: list, sheet_name: str = None) -> str:
+    """批量写入Excel单元格
+    data格式: [{"cell": "A1", "value": "xxx"}, ...]
+    """
+    from openpyxl import load_workbook
+    wb = load_workbook(file_path)
+    ws = wb[sheet_name] if sheet_name else wb.active
+    count = 0
+    for item in data:
+        try:
+            cell_ref = item.get("cell")
+            value = item.get("value")
+            if cell_ref and value is not None:
+                ws[cell_ref] = value
+                count += 1
+        except:
+            pass
+    wb.save(file_path)
+    return f"已批量写入{count}个单元格"
+
+
+def _batch_set_style_docx(file_path: str, operations: list) -> str:
+    """批量设置Word段落样式
+    operations格式: [{"para_index": 0, "font_name": "SimSun", "bold": true}, ...]
+    """
+    from docx import Document
+    from docx.shared import Pt, RGBColor
+    from docx.oxml.ns import qn
+    from lxml import etree
+    
+    doc = Document(file_path)
+    count = 0
+    
+    for op in operations:
+        para_index = op.get("para_index")
+        if para_index is None or para_index >= len(doc.paragraphs):
+            continue
+        
+        para = doc.paragraphs[para_index]
+        
+        for run in para.runs:
+            if "font_name" in op:
+                rPr = run._element.get_or_add_rPr()
+                for rf in rPr.findall(qn('w:rFonts')):
+                    rPr.remove(rf)
+                rFonts = etree.SubElement(rPr, qn('w:rFonts'))
+                rFonts.set(qn('w:ascii'), op["font_name"])
+                rFonts.set(qn('w:hAnsi'), op["font_name"])
+                rFonts.set(qn('w:eastAsia'), op["font_name"])
+                rFonts.set(qn('w:cs'), op["font_name"])
+                rFonts.set(qn('w:hint'), 'eastAsia')
+            
+            if "font_size" in op:
+                run.font.size = Pt(op["font_size"])
+            if "bold" in op:
+                run.font.bold = op["bold"]
+            if "italic" in op:
+                run.font.italic = op["italic"]
+            if "underline" in op:
+                run.font.underline = op["underline"]
+            if "color" in op:
+                r, g, b = int(op["color"][0:2], 16), int(op["color"][2:4], 16), int(op["color"][4:6], 16)
+                run.font.color.rgb = RGBColor(r, g, b)
+        
+        count += 1
+    
+    doc.save(file_path)
+    return f"已批量设置{count}个段落样式"
+
+
+def _batch_set_style_xlsx(file_path: str, operations: list) -> str:
+    """批量设置Excel单元格样式
+    operations格式: [{"cell": "A1", "font_name": "SimSun", "bold": true}, ...]
+    """
+    from openpyxl import load_workbook
+    from openpyxl.styles import Font, PatternFill, Alignment, Color
+    
+    wb = load_workbook(file_path)
+    ws = wb.active
+    count = 0
+    
+    for op in operations:
+        cell_ref = op.get("cell")
+        if not cell_ref:
+            continue
+        
+        try:
+            cell = ws[cell_ref]
+            
+            font_kwargs = {}
+            if "font_name" in op:
+                font_kwargs['name'] = op["font_name"]
+            if "font_size" in op:
+                font_kwargs['size'] = op["font_size"]
+            if "bold" in op:
+                font_kwargs['bold'] = op["bold"]
+            if "italic" in op:
+                font_kwargs['italic'] = op["italic"]
+            if "underline" in op and op["underline"]:
+                font_kwargs['underline'] = 'single'
+            if "color" in op:
+                font_kwargs['color'] = Color(rgb=op["color"])
+            
+            if font_kwargs:
+                cell.font = Font(**font_kwargs)
+            
+            if "bg_color" in op:
+                cell.fill = PatternFill(start_color=op["bg_color"], end_color=op["bg_color"], fill_type="solid")
+            
+            count += 1
+        except:
+            pass
+    
+    wb.save(file_path)
+    return f"已批量设置{count}个单元格样式"
+
+
+# ==================== 文档质量检查 ====================
+
+def _check_docx_quality(file_path: str) -> dict:
+    """检查Word文档质量"""
+    from docx import Document
+    doc = Document(file_path)
+    
+    issues = []
+    stats = {
+        "paragraphs": len(doc.paragraphs),
+        "tables": len(doc.tables),
+        "images": 0,
+        "empty_paragraphs": 0,
+        "long_paragraphs": 0,
+        "short_paragraphs": 0
+    }
+    
+    for i, para in enumerate(doc.paragraphs):
+        text = para.text.strip()
+        
+        if not text:
+            stats["empty_paragraphs"] += 1
+            continue
+        
+        if len(text) > 500:
+            stats["long_paragraphs"] += 1
+            issues.append(f"段落{i}: 内容过长({len(text)}字符)")
+        
+        if len(text) < 5 and text not in ["", " ", "。", "，", ".", ","]:
+            stats["short_paragraphs"] += 1
+            issues.append(f"段落{i}: 内容过短({text})")
+    
+    # Count images
+    for rel in doc.part.rels.values():
+        if "image" in rel.reltype:
+            stats["images"] += 1
+    
+    # Quality score
+    score = 100
+    if stats["empty_paragraphs"] > 5:
+        score -= 10
+        issues.append(f"空段落过多({stats['empty_paragraphs']}个)")
+    if stats["long_paragraphs"] > 3:
+        score -= 10
+        issues.append(f"长段落过多({stats['long_paragraphs']}个)")
+    if stats["images"] == 0 and stats["paragraphs"] > 10:
+        score -= 5
+        issues.append("缺少图片")
+    
+    return {
+        "score": max(0, score),
+        "stats": stats,
+        "issues": issues[:10],  # 最多返回10个问题
+        "suggestions": _generate_suggestions(stats, issues)
+    }
+
+
+def _check_xlsx_quality(file_path: str) -> dict:
+    """检查Excel文档质量"""
+    from openpyxl import load_workbook
+    wb = load_workbook(file_path, data_only=True)
+    
+    issues = []
+    stats = {
+        "sheets": len(wb.sheetnames),
+        "total_cells": 0,
+        "empty_cells": 0,
+        "merged_cells": 0,
+        "formulas": 0
+    }
+    
+    for sheet_name in wb.sheetnames:
+        ws = wb[sheet_name]
+        stats["total_cells"] += ws.max_row * ws.max_column
+        stats["merged_cells"] += len(ws.merged_cells.ranges)
+        
+        for row in ws.iter_rows():
+            for cell in row:
+                if cell.value is None:
+                    stats["empty_cells"] += 1
+                elif isinstance(cell.value, str) and cell.value.startswith("="):
+                    stats["formulas"] += 1
+    
+    # Quality score
+    score = 100
+    empty_ratio = stats["empty_cells"] / max(stats["total_cells"], 1)
+    if empty_ratio > 0.8:
+        score -= 20
+        issues.append(f"空单元格比例过高({empty_ratio:.1%})")
+    if stats["formulas"] == 0 and stats["total_cells"] > 50:
+        score -= 10
+        issues.append("缺少公式")
+    
+    return {
+        "score": max(0, score),
+        "stats": stats,
+        "issues": issues[:10],
+        "suggestions": _generate_suggestions(stats, issues)
+    }
+
+
+def _generate_suggestions(stats: dict, issues: list) -> list:
+    """生成改进建议"""
+    suggestions = []
+    
+    if stats.get("empty_paragraphs", 0) > 5:
+        suggestions.append("建议删除多余的空段落")
+    if stats.get("long_paragraphs", 0) > 3:
+        suggestions.append("建议将长段落拆分为多个短段落")
+    if stats.get("images", 0) == 0:
+        suggestions.append("建议添加图片以增强可读性")
+    if stats.get("empty_cells", 0) > stats.get("total_cells", 0) * 0.5:
+        suggestions.fill("建议填充空单元格或删除空行/列")
+    if stats.get("formulas", 0) == 0:
+        suggestions.append("考虑使用公式进行数据计算")
+    
+    return suggestions[:5]  # 最多返回5个建议
+
+
+# ==================== 模板管理 ====================
+
+def _extract_docx_template(file_path: str) -> dict:
+    """提取Word文档模板"""
+    from docx import Document
+    from docx.shared import Pt
+    
+    doc = Document(file_path)
+    
+    template = {
+        "styles": [],
+        "structure": [],
+        "fonts": set(),
+        "sizes": set()
+    }
+    
+    # Extract paragraph styles
+    for i, para in enumerate(doc.paragraphs):
+        if para.text.strip():
+            style_info = {
+                "index": i,
+                "text_preview": para.text[:50],
+                "style_name": para.style.name if para.style else "Normal"
+            }
+            
+            for run in para.runs:
+                if run.font.name:
+                    template["fonts"].add(run.font.name)
+                if run.font.size:
+                    template["sizes"].add(str(run.font.size))
+            
+            template["structure"].append(style_info)
+    
+    # Extract table info
+    for i, table in enumerate(doc.tables):
+        template["structure"].append({
+            "type": "table",
+            "index": i,
+            "rows": len(table.rows),
+            "columns": len(table.columns)
+        })
+    
+    template["fonts"] = list(template["fonts"])
+    template["sizes"] = list(template["sizes"])
+    
+    return template
+
+
+def _apply_template(file_path: str, template: dict) -> str:
+    """应用模板到文档"""
+    from docx import Document
+    from docx.shared import Pt, RGBColor
+    from docx.oxml.ns import qn
+    from lxml import etree
+    
+    doc = Document(file_path)
+    
+    # Apply font to all paragraphs
+    target_font = template.get("font_name", "SimSun")
+    target_size = template.get("font_size", 12)
+    
+    for para in doc.paragraphs:
+        for run in para.runs:
+            rPr = run._element.get_or_add_rPr()
+            for rf in rPr.findall(qn('w:rFonts')):
+                rPr.remove(rf)
+            rFonts = etree.SubElement(rPr, qn('w:rFonts'))
+            rFonts.set(qn('w:ascii'), target_font)
+            rFonts.set(qn('w:hAnsi'), target_font)
+            rFonts.set(qn('w:eastAsia'), target_font)
+            rFonts.set(qn('w:cs'), target_font)
+            rFonts.set(qn('w:hint'), 'eastAsia')
+            run.font.size = Pt(target_size)
+    
+    doc.save(file_path)
+    return f"已应用模板: {target_font} {target_size}pt"
+
+
 # ==================== 样式设置 ====================
 
 def _file_set_cell_style_xlsx(
@@ -1336,6 +1689,80 @@ TOOLS = [
             },
             "required": ["ppt_path", "doc_path"]
         }
+    },
+    {
+        "name": "batch_read",
+        "description": "批量读取文档内容（多个段落或单元格）",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "file_path": {"type": "string", "description": "文件路径"},
+                "indices": {"type": "array", "description": "Word段落索引列表或Excel单元格列表（如['A1','B2']）", "items": {}},
+                "sheet_name": {"type": "string", "description": "Excel工作表名称"}
+            },
+            "required": ["file_path", "indices"]
+        }
+    },
+    {
+        "name": "batch_write",
+        "description": "批量写入Excel单元格",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "file_path": {"type": "string", "description": "Excel文件路径"},
+                "data": {"type": "array", "description": "数据列表，格式: [{\"cell\":\"A1\",\"value\":\"xxx\"}]", "items": {}},
+                "sheet_name": {"type": "string", "description": "工作表名称"}
+            },
+            "required": ["file_path", "data"]
+        }
+    },
+    {
+        "name": "batch_set_style",
+        "description": "批量设置样式（Word段落或Excel单元格）",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "file_path": {"type": "string", "description": "文件路径"},
+                "operations": {"type": "array", "description": "操作列表", "items": {}},
+                "sheet_name": {"type": "string", "description": "Excel工作表名称"}
+            },
+            "required": ["file_path", "operations"]
+        }
+    },
+    {
+        "name": "check_quality",
+        "description": "检查文档质量并提供改进建议",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "file_path": {"type": "string", "description": "文件路径"}
+            },
+            "required": ["file_path"]
+        }
+    },
+    {
+        "name": "extract_template",
+        "description": "提取文档模板（字体、样式、结构）",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "file_path": {"type": "string", "description": "文件路径"}
+            },
+            "required": ["file_path"]
+        }
+    },
+    {
+        "name": "apply_template",
+        "description": "应用模板到文档",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "file_path": {"type": "string", "description": "文件路径"},
+                "font_name": {"type": "string", "description": "目标字体"},
+                "font_size": {"type": "integer", "description": "目标字号"}
+            },
+            "required": ["file_path"]
+        }
     }
 ]
 
@@ -1729,6 +2156,61 @@ def handle_tool_call(name: str, arguments: dict) -> Any:
         doc_path = os.path.abspath(arguments["doc_path"])
         os.makedirs(os.path.dirname(doc_path) or '.', exist_ok=True)
         return _ppt_to_doc(ppt_path, doc_path)
+    
+    elif name == "batch_read":
+        file_path = os.path.abspath(arguments["file_path"])
+        indices = arguments["indices"]
+        sheet_name = arguments.get("sheet_name")
+        ext = Path(file_path).suffix.lower()
+        
+        if ext in ['.docx', '.doc']:
+            return _batch_read_docx(file_path, indices)
+        elif ext in ['.xlsx', '.xls']:
+            return _batch_read_xlsx(file_path, indices, sheet_name)
+        else:
+            raise ValueError(f"batch_read不支持: {ext}")
+    
+    elif name == "batch_write":
+        file_path = os.path.abspath(arguments["file_path"])
+        data = arguments["data"]
+        sheet_name = arguments.get("sheet_name")
+        return _batch_write_xlsx(file_path, data, sheet_name)
+    
+    elif name == "batch_set_style":
+        file_path = os.path.abspath(arguments["file_path"])
+        operations = arguments["operations"]
+        sheet_name = arguments.get("sheet_name")
+        ext = Path(file_path).suffix.lower()
+        
+        if ext in ['.docx', '.doc']:
+            return _batch_set_style_docx(file_path, operations)
+        elif ext in ['.xlsx', '.xls']:
+            return _batch_set_style_xlsx(file_path, operations)
+        else:
+            raise ValueError(f"batch_set_style不支持: {ext}")
+    
+    elif name == "check_quality":
+        file_path = os.path.abspath(arguments["file_path"])
+        ext = Path(file_path).suffix.lower()
+        
+        if ext in ['.docx', '.doc']:
+            return _check_docx_quality(file_path)
+        elif ext in ['.xlsx', '.xls']:
+            return _check_xlsx_quality(file_path)
+        else:
+            raise ValueError(f"check_quality不支持: {ext}")
+    
+    elif name == "extract_template":
+        file_path = os.path.abspath(arguments["file_path"])
+        return _extract_docx_template(file_path)
+    
+    elif name == "apply_template":
+        file_path = os.path.abspath(arguments["file_path"])
+        template = {
+            "font_name": arguments.get("font_name", "SimSun"),
+            "font_size": arguments.get("font_size", 12)
+        }
+        return _apply_template(file_path, template)
     
     else:
         raise ValueError(f"未知工具: {name}")

@@ -124,6 +124,22 @@ Add to your MCP client configuration file:
 | `doc_to_ppt` | Word to PPT |
 | `ppt_to_doc` | PPT to Word summary |
 
+### Batch Operations (New)
+
+| Tool | Description |
+|:-----|:------------|
+| `batch_read` | Batch read multiple paragraphs or cells |
+| `batch_write` | Batch write multiple Excel cells |
+| `batch_set_style` | Batch set styles for multiple elements |
+
+### Quality & Templates (New)
+
+| Tool | Description |
+|:-----|:------------|
+| `check_quality` | Check document quality and get suggestions |
+| `extract_template` | Extract template from document |
+| `apply_template` | Apply template to document |
+
 ---
 
 ## 💡 Examples
@@ -295,7 +311,7 @@ All tests passed!
 
 ## 📊 Tools Overview
 
-Total **17** MCP tools:
+Total **23** MCP tools:
 
 | Category | Count | Tools |
 |:---------|:-----:|:------|
@@ -304,6 +320,8 @@ Total **17** MCP tools:
 | Style Settings | 2 | set_cell_style, set_paragraph_style |
 | Image Insert | 1 | insert_image |
 | Document Conversion | 2 | doc_to_ppt, ppt_to_doc |
+| Batch Operations | 3 | batch_read, batch_write, batch_set_style |
+| Quality & Templates | 3 | check_quality, extract_template, apply_template |
 | Advanced Features | 2 | export_pdf, run_macro |
 
 ---

@@ -122,6 +122,22 @@ python server.py
 | `doc_to_ppt` | Word转PPT |
 | `ppt_to_doc` | PPT转Word总结 |
 
+### 批量操作（新增）
+
+| 工具 | 说明 |
+|:-----|:-----|
+| `batch_read` | 批量读取多个段落或单元格 |
+| `batch_write` | 批量写入多个Excel单元格 |
+| `batch_set_style` | 批量设置多个元素的样式 |
+
+### 质量检查与模板（新增）
+
+| 工具 | 说明 |
+|:-----|:-----|
+| `check_quality` | 检查文档质量并提供改进建议 |
+| `extract_template` | 从文档提取模板 |
+| `apply_template` | 应用模板到文档 |
+
 ---
 
 ## 💡 使用示例
@@ -293,7 +309,7 @@ All tests passed!
 
 ## 📊 工具总览
 
-共 **17个** MCP工具：
+共 **23个** MCP工具：
 
 | 类别 | 数量 | 工具 |
 |:-----|:----:|:-----|
@@ -302,6 +318,8 @@ All tests passed!
 | 样式设置 | 2 | set_cell_style, set_paragraph_style |
 | 图片插入 | 1 | insert_image |
 | 文档转换 | 2 | doc_to_ppt, ppt_to_doc |
+| 批量操作 | 3 | batch_read, batch_write, batch_set_style |
+| 质量与模板 | 3 | check_quality, extract_template, apply_template |
 | 高级功能 | 2 | export_pdf, run_macro |
 
 ---
