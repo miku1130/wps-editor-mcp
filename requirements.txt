@@ -1,0 +1,8 @@
+# Office Open XML libraries (不需要安装WPS)
+python-docx>=1.1.0
+openpyxl>=3.1.0
+python-pptx>=0.6.21
+
+# COM automation (Windows, 需要安装WPS或Office)
+pywin32>=306
+comtypes>=1.4.1
