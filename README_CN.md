@@ -351,6 +351,18 @@ All tests passed!
 
 ---
 
+## 💬 交流群
+
+加入QQ群交流讨论：
+
+**AI编程开源技术交流群**
+
+[![QQ群](https://img.shields.io/badge/QQ群-加入交流-12B7F5?style=for-the-badge&logo=tencent-qq&logoColor=white)](https://qm.qq.com/q/kjM22sjGU2)
+
+🔗 直接链接：https://qm.qq.com/q/kjM22sjGU2
+
+---
+
 <div align="center">
 
 **如果这个项目对你有帮助，请给个 ⭐ Star 支持一下！**

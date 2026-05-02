@@ -353,6 +353,18 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) for deta
 
 ---
 
+## 💬 Community
+
+Join our QQ group for discussion and support:
+
+**AI编程开源技术交流群**
+
+[![QQ Group](https://img.shields.io/badge/QQ_Group-Join-12B7F5?style=for-the-badge&logo=tencent-qq&logoColor=white)](https://qm.qq.com/q/kjM22sjGU2)
+
+🔗 Direct link: https://qm.qq.com/q/kjM22sjGU2
+
+---
+
 <div align="center">
 
 **If this project helps you, please give a ⭐ Star!**
